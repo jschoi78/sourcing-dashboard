@@ -512,18 +512,20 @@
   let _allProductTiers = [];
 
   function parseTierLine(line) {
-    return line.replace(/@/g,'').split('·').map(function(t) {
-      t = t.trim(); if (!t) return null;
-      var sp = t.lastIndexOf(' ');
-      if (sp < 0) return null;
-      var label = t.substring(0, sp).trim();
-      var amt = t.substring(sp + 1).trim();
-      var qtyStr = label.replace(/[,개병]/g,'').trim();
-      return { qty: parseInt(qtyStr) || 0, price: parseFloat(amt.replace('$','')) || 0, label: label, amt: amt };
-    }).filter(Boolean);
+    var results = [];
+    var re = /@([^@$·\n]+?)\s+(\$[\d.,]+)/g;
+    var m;
+    while ((m = re.exec(line)) !== null) {
+      var labelRaw = m[1].trim();
+      var amt = m[2].trim();
+      var qty = parseInt(labelRaw.replace(/[^0-9]/g, '')) || 0;
+      results.push({ qty: qty, price: parseFloat(amt.replace(/[$,]/g, '')) || 0, label: labelRaw, amt: amt });
+    }
+    return results;
   }
 
   function switchProduct(idx) {
+    if (idx === '' || idx === null || idx === undefined) return;
     idx = parseInt(idx, 10);
     _activePriceTiers = _allProductTiers[idx] || [];
     document.querySelectorAll('.prod-panel').forEach(function(panel, i) {
@@ -627,7 +629,7 @@
           cur = { name: parts[0].trim(), spec: parts[1] ? parts[1].trim() : '', tiers: [], notes: [] };
         } else if (line.startsWith('※') && cur) {
           cur.notes.push(line);
-        } else if (line.indexOf('·') !== -1 && line.indexOf('@') !== -1 && cur) {
+        } else if (line.indexOf('@') !== -1 && cur) {
           cur.tiers = parseTierLine(line);
         }
       });
@@ -635,22 +637,26 @@
       if (!products.length) return '<div class="info-box"><div class="info-label">단가</div><div class="info-val">' + unitPrice + '</div></div>';
 
       _allProductTiers = products.map(function(p) { return p.tiers; });
-      _activePriceTiers = _allProductTiers[0] || [];
+      _activePriceTiers = [];
 
       var headerHtml;
       if (products.length > 1) {
-        var opts = products.map(function(p, i) {
-          return '<option value="' + i + '">' + p.name + '</option>';
-        }).join('');
+        var opts = '<option value="" disabled selected>제품 선택 ▼</option>' +
+          products.map(function(p, i) {
+            return '<option value="' + i + '">' + p.name + '</option>';
+          }).join('');
         headerHtml = '<select class="prod-select" onchange="switchProduct(this.value)">' + opts + '</select>';
       } else {
         headerHtml = '<div class="prod-single-name">' + products[0].name + '</div>';
       }
 
+      var singleProduct = products.length === 1;
+      if (singleProduct) { _activePriceTiers = _allProductTiers[0] || []; }
       var panelsHtml = products.map(function(p, i) {
         var unit = (p.name.indexOf('병') !== -1 || p.spec.indexOf('병') !== -1) ? '병' : '개';
         var priceContent = buildPricePanelHtml(p.tiers, unit);
-        return '<div id="prodPanel_' + i + '" class="prod-panel"' + (i > 0 ? ' style="display:none"' : '') + '>' +
+        var visible = singleProduct && i === 0;
+        return '<div id="prodPanel_' + i + '" class="prod-panel"' + (visible ? '' : ' style="display:none"') + '>' +
           priceContent + '</div>';
       }).join('');
 
