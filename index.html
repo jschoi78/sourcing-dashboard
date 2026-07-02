@@ -1929,6 +1929,51 @@
             saveData();
           }
           localStorage.setItem('patched_trustwork_comparison_v1', '1');
+        // patched_trustwork_comparison_v2: v1 실행 후 데이터 누락 대비 안전 패치
+        if (!localStorage.getItem('patched_trustwork_comparison_v2')) {
+          var twCmp2 = DATA.find(function(m){ return m.name === 'Trustwork'; });
+          if (twCmp2) {
+            twCmp2.specialty = '구미·캡슐 OEM';
+            twCmp2.unitPrice =
+              '##Trustwork 구미 OEM 1차 견적 (크랜베리 미포함, Option B)' +
+              '|품번:1차 견적 (크랜베리 미포함);;MOQ:600,000개 구미(=10,000병);;1회 섭취량:구미 2개/30회분/60CT' +
+              ';;메인 균주:Bacillus coagulans SNZ 1969 (LactoSpore®) / 2B CFU / 2정당' +
+              ';;파인애플추출물:Pineapple Fruit Powder 50mg / 2정당' +
+              ';;비타민C:Vitamin C (Ascorbic Acid) 20mg / 2정당' +
+              ';;이눌린:Inulin 25mg / 2정당' +
+              ';;크랜베리:미포함 (Option B)' +
+              ';;기타:Vegan / Gelatin-free / Gluten-free / No synthetic colorants / Sugar-free' +
+              ';;가격 구성:Gummy $0.08038/ea / Co-Packing $0.95 / Bottles+Caps $0.30~$0.55 / Labels $0.25~$0.35\n' +
+              '@10,000병 $6.3228\n' +
+              '※ 최저 $6.3228 ~ 최고 $6.6728 (Bottles+Caps · Labels 옵션에 따라 변동)';
+            if (!twCmp2.productComparisons) twCmp2.productComparisons = {};
+            twCmp2.productComparisons[0] = [
+              { label: '제형',           target: '구미 / 2정당',                                          sample: '구미 2개 / 30회분 / 60CT ✓' },
+              { label: '메인 균주',       target: 'Bacillus coagulans SNZ 1969 / 2B CFU / 2정당',          sample: 'SNZ 1969 (LactoSpore®) / 2B CFU ✓' },
+              { label: 'Pacran 크랜베리', target: 'Pacran 전용 500mg / 2정당',                            sample: '미포함 (Option B)' },
+              { label: '파인애플추출물',  target: '50mg / 2정당',                                         sample: 'Pineapple Fruit Powder 50mg ✓' },
+              { label: '비타민C',         target: '20mg / 2정당',                                        sample: 'Vitamin C (Ascorbic Acid) 20mg ✓' },
+              { label: '이눌린',          target: '25mg / 2정당',                                        sample: 'Inulin 25mg ✓' },
+              { label: '기타 요건',       target: '비건 / 젤라틴프리 / 글루텐프리 / 합성색소 무첨가 / 무설탕', sample: 'Vegan / 젤라틴프리 / 글루텐프리 / 합성색소 무첨가 / 슈가프리 ✓' }
+            ];
+            twCmp2.quoteVersions = [
+              {
+                date: '2026-07-02', label: '1차 견적', contact: 'NAREK',
+                rows: [
+                  { key: '균주',     val: 'Bacillus coagulans SNZ 1969 (LactoSpore®) / 2B CFU / 2정당' },
+                  { key: '파인애플', val: 'Pineapple Fruit Powder 50mg / 2정당' },
+                  { key: '비타민C',  val: 'Vitamin C (Ascorbic Acid) 20mg / 2정당' },
+                  { key: '이눌린',   val: 'Inulin 25mg / 2정당' },
+                  { key: '크랜베리', val: '미포함 (Option B)' },
+                  { key: '기타',     val: 'Vegan / 젤라틴프리 / 글루텐프리 / 합성색소 무첨가 / 슈가프리' }
+                ],
+                price: '@10,000병 $6.3228 ~ $6.6728'
+              }
+            ];
+            saveData();
+          }
+          localStorage.setItem('patched_trustwork_comparison_v2', '1');
+        }
         }
       } else {
         DATA = JSON.parse(JSON.stringify(BASE_DATA));
